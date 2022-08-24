@@ -47,8 +47,8 @@ def get_dolars_data(dollars):
 
 def create_window(dollars_data):
     """ Show the main GUI """
-    sg.theme("DarkGreen")
-
+    sg.theme("Green")
+    
     frames = [
         [
             [sg.Text("Compra", font=("Arial", 12, 'bold'), text_color='white'), sg.Text("Venta",  font=('Arial', 12, 'bold'), text_color='white')],
@@ -70,15 +70,37 @@ def create_window(dollars_data):
 
     window = sg.Window("Dólar Hoy", layout, grab_anywhere=True, element_justification='c')
     while True:
-        event, values = window.read()
+        event, _ = window.read()
+        if event == sg.WIN_CLOSED:
+            break
+
+def no_connection_window():
+    sg.theme("Green")
+
+    frame = [
+        [sg.Text('Ha ocurrido un problema al intentar conectarse al servidor', pad=(10, 10), font=("Arial", 10, 'bold'), text_color='white')],
+        [sg.Text('Por favor, revise el estado de su red', pad=(0, 10), font=("Arial", 10, 'bold'), text_color='white')],
+    ]
+    
+    layout = [
+            [sg.Frame('Problemas de conexión', font=("Helvetica", 12, 'bold'), title_color= "white", layout=frame, title_location='n', element_justification= "c")],
+    ]
+
+    window = sg.Window("Dólar Hoy", layout, grab_anywhere=True, element_justification='c')
+    while True:
+        event, _ = window.read()
         if event == sg.WIN_CLOSED:
             break
 
 def main():
-    dollars, soup = get_all_dolars()
-    dollars = filter_data(dollars, soup)
-    dollars_data = get_dolars_data(dollars)
-    create_window(dollars_data)
+    try:
+        dollars, soup = get_all_dolars()
+    except requests.ConnectionError:
+        no_connection_window()
+    else:
+        dollars = filter_data(dollars, soup)
+        dollars_data = get_dolars_data(dollars)
+        create_window(dollars_data)
 
 if __name__ == '__main__':
     main()
